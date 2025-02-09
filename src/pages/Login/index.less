@@ -1,0 +1,82 @@
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1890ff 0%, #36cfc9 100%);
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('https://img.freepik.com/free-vector/campus-collage-pattern_23-2148565015.jpg?w=2000') center/cover;
+    opacity: 0.1;
+    pointer-events: none;
+  }
+}
+
+.content {
+  width: 400px;
+  padding: 40px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(10px);
+  position: relative;
+  z-index: 1;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 32px;
+
+  h1 {
+    color: #1890ff;
+    font-size: 28px;
+    font-weight: bold;
+    margin-bottom: 8px;
+  }
+
+  p {
+    color: #666;
+    font-size: 16px;
+    margin: 0;
+  }
+}
+
+:global {
+  .ant-input-affix-wrapper {
+    border-radius: 4px;
+    border: 1px solid #d9d9d9;
+    transition: all 0.3s;
+
+    &:hover, &:focus {
+      border-color: #1890ff;
+      box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
+    }
+  }
+
+  .ant-btn {
+    border-radius: 4px;
+    height: 44px;
+    font-size: 16px;
+    margin-top: 8px;
+    
+    &-primary {
+      background: #1890ff;
+      
+      &:hover {
+        background: #40a9ff;
+      }
+    }
+  }
+
+  .ant-form-item {
+    margin-bottom: 24px;
+  }
+}

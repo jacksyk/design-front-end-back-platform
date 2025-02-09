@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: web-back-platform
+    ports:
+      - '3500:80'
+    restart: always
