@@ -35,6 +35,16 @@ const AdminLayout = () => {
       icon: <UserOutlined />,
       label: '活动管理',
     },
+    {
+      key: '/tools',
+      icon: <UserOutlined />,
+      label: '工具箱管理',
+    },
+    {
+      key: '/tags',
+      icon: <UserOutlined />,
+      label: '工具箱标签管理',
+    },
   ];
 
   return (
