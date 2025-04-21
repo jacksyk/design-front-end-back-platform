@@ -133,6 +133,9 @@ const Tags = () => {
         dataSource={data}
         rowKey="id"
         loading={loading}
+        scroll={{
+          x: '100%',
+        }}
       />
 
       <Modal

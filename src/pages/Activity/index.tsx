@@ -1,7 +1,6 @@
 import {
   DeleteOutlined,
   EditOutlined,
-  PlusOutlined,
   SearchOutlined,
 } from '@ant-design/icons';
 import { request } from '@umijs/max';
@@ -46,6 +45,8 @@ interface ActivityType {
   user: UserType;
   studentId: string;
 }
+
+const map = new Map();
 
 const Activity = () => {
   const [searchText, setSearchText] = useState('');
@@ -150,6 +151,31 @@ const Activity = () => {
     });
   };
 
+  const handleSearch = () => {
+    if (searchText === '') {
+      setData(map.get('all'));
+      return;
+    }
+
+    if (map.has(searchText)) {
+      setData(map.get(searchText));
+      return;
+    }
+
+    request(`/activity/searchKeyword/${searchText}`).then((res) => {
+      let tmp = res.data.data;
+      // @ts-ignore
+      tmp = tmp.map((item) => {
+        item.studentId = item.user.student_id;
+        return item;
+      });
+
+      map.set(searchText, tmp);
+
+      setData(tmp);
+    });
+  };
+
   useMount(() => {
     // 先不支持分页
     request('/activity?page=1&limit=10000').then((res) => {
@@ -159,6 +185,8 @@ const Activity = () => {
         item.studentId = item.user.student_id;
         return item;
       });
+      map.set('all', tmp);
+
       setData(tmp);
     });
   });
@@ -166,21 +194,13 @@ const Activity = () => {
   return (
     <Card>
       <Space style={{ marginBottom: 16 }}>
-        <Button type="primary" icon={<PlusOutlined />} onClick={handleCreate}>
-          创建活动
-        </Button>
         <Input
           placeholder="搜索活动"
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
           style={{ width: 200 }}
         />
-        <Button
-          icon={<SearchOutlined />}
-          onClick={() => {
-            /* TODO: 实现搜索 */
-          }}
-        >
+        <Button icon={<SearchOutlined />} onClick={handleSearch}>
           搜索
         </Button>
       </Space>
@@ -190,6 +210,9 @@ const Activity = () => {
         dataSource={data}
         rowKey="id"
         loading={loading}
+        scroll={{
+          x: '100%',
+        }}
       />
 
       <Modal

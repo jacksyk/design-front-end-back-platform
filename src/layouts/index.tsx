@@ -63,7 +63,9 @@ const AdminLayout = () => {
               overflow: 'hidden',
               whiteSpace: 'nowrap',
               margin: 0,
+              cursor: 'pointer',
             }}
+            onClick={() => history.push('/home')}
           >
             {collapsed ? '校园' : '校园信息交流平台'}
           </div>

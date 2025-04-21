@@ -15,7 +15,7 @@ const LoginPage = () => {
   const handleSubmit = async (values: LoginFormValues) => {
     try {
       // TODO: 实现登录逻辑
-      request('/login', {
+      request('/login/admin', {
         method: 'post',
         data: {
           student_id: values.username,

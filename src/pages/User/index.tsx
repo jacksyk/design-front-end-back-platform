@@ -5,17 +5,7 @@ import {
 } from '@ant-design/icons';
 import { request } from '@umijs/max';
 import { useMount } from 'ahooks';
-import {
-  Button,
-  Card,
-  Form,
-  Input,
-  message,
-  Modal,
-  Select,
-  Space,
-  Table,
-} from 'antd';
+import { Button, Card, Form, Input, message, Modal, Space, Table } from 'antd';
 import { useState } from 'react';
 
 interface UserType {
@@ -29,7 +19,10 @@ interface UserType {
   introduction: string;
   college: string;
   contact: string;
+  isActive: string;
 }
+
+const map = new Map();
 
 const User = () => {
   const [searchText, setSearchText] = useState('');
@@ -45,20 +38,32 @@ const User = () => {
     setEditModalVisible(true);
   };
 
-  const handleEditSubmit = async () => {
-    try {
-      const values = await form.validateFields();
-      // TODO: 调用更新用户API
-
-      const updatedData = data.map((item) =>
-        item.id === currentUser?.id ? { ...item, ...values } : item,
-      );
-      setData(updatedData);
-      message.success('编辑成功');
-      setEditModalVisible(false);
-    } catch (error) {
-      message.error('表单验证失败');
-    }
+  const handleForbidden = (record: UserType) => {
+    const str = `${record.isActive !== '是' ? '封禁' : '解封'}`;
+    Modal.confirm({
+      title: `${str}用户`,
+      content: `确定要${str}该用户吗？`,
+      onOk: () => {
+        request(`/user/ban/${record.id}`)
+          .then(() => {
+            setData(
+              data.map((item) => {
+                if (item.id === record.id) {
+                  return {
+                    ...item,
+                    isActive: item.isActive === '是' ? '否' : '是',
+                  };
+                }
+                return item;
+              }),
+            );
+            message.success('操作成功');
+          })
+          .catch((err) => {
+            console.log('err', err);
+          });
+      },
+    });
   };
 
   const handleDelete = (record: UserType) => {
@@ -66,9 +71,14 @@ const User = () => {
       title: '删除用户',
       content: '确定要删除该用户吗？',
       onOk: () => {
-        // TODO: 实现删除逻辑
-        setData(data.filter((item) => item.id !== record.id));
-        message.success('删除成功');
+        request(`/user/delete/${record.id}`)
+          .then(() => {
+            setData(data.filter((item) => item.id !== record.id));
+            message.success('删除成功');
+          })
+          .catch((err) => {
+            console.log('err', err);
+          });
       },
     });
   };
@@ -95,14 +105,14 @@ const User = () => {
       key: 'email',
     },
     {
-      title: '创建时间',
-      dataIndex: 'createTime',
-      key: 'createTime',
+      title: '是否被封号',
+      dataIndex: 'isActive',
+      key: 'isActive',
     },
     {
       title: '角色',
-      dataIndex: 'user',
-      key: 'user',
+      dataIndex: 'role',
+      key: 'role',
     },
     {
       title: '学院',
@@ -117,15 +127,16 @@ const User = () => {
     {
       title: '操作',
       key: 'action',
-      render: (_, record: UserType) => (
+      render: (_: any, record: UserType) => (
         <Space>
           <Button
-            type="primary"
+            danger
             icon={<EditOutlined />}
-            onClick={() => handleEdit(record)}
+            onClick={() => handleForbidden(record)}
           >
-            编辑
+            {record.isActive !== '是' ? '封禁' : '解封'}
           </Button>
+
           <Button
             danger
             icon={<DeleteOutlined />}
@@ -139,16 +150,41 @@ const User = () => {
   ];
 
   const handleSearch = () => {
-    setLoading(true);
-    // TODO: 实现搜索逻辑
-    setTimeout(() => {
-      setLoading(false);
-    }, 500);
+    // console.log(map, 'map');
+    // console.log('searchText', searchText);
+    if (searchText.length === 0) {
+      setData(map.get('all'));
+      return;
+    }
+    if (map.has(searchText)) {
+      setData(map.get(searchText));
+      return;
+    }
+
+    request(`/user/search/${searchText}`).then((res) => {
+      const data = res.data.data.map((item: any) => {
+        return {
+          ...item,
+          isActive: item.isActive ? '否' : '是',
+        };
+      });
+      map.set(searchText, data);
+      setData(data);
+    });
   };
 
   useMount(() => {
     request('/user/all').then((res) => {
-      setData(res.data.data);
+      const allData = res.data.data.map((item: any) => {
+        return {
+          ...item,
+          isActive: item.isActive ? '否' : '是',
+        };
+      });
+
+      map.set('all', allData);
+
+      setData(allData);
     });
   });
 
@@ -156,7 +192,7 @@ const User = () => {
     <Card>
       <Space style={{ marginBottom: 16 }}>
         <Input
-          placeholder="搜索用户"
+          placeholder="搜索关键词"
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
           style={{ width: 200 }}
@@ -169,6 +205,9 @@ const User = () => {
         columns={columns}
         dataSource={data}
         rowKey="id"
+        scroll={{
+          x: '100%',
+        }}
         loading={loading}
         pagination={{
           total: data.length,
@@ -176,70 +215,6 @@ const User = () => {
           showTotal: (total) => `共 ${total} 条`,
         }}
       />
-
-      <Modal
-        title="编辑用户"
-        open={editModalVisible}
-        onOk={handleEditSubmit}
-        onCancel={() => setEditModalVisible(false)}
-        width={600}
-      >
-        <Form form={form} layout="vertical" initialValues={currentUser || {}}>
-          <Form.Item
-            name="username"
-            label="用户名"
-            rules={[{ required: true, message: '请输入用户名' }]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            name="student_id"
-            label="学号"
-            rules={[{ required: true, message: '请输入学号' }]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            name="email"
-            label="邮箱"
-            rules={[
-              { required: true, message: '请输入邮箱' },
-              { type: 'email', message: '请输入有效的邮箱地址' },
-            ]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            name="role"
-            label="角色"
-            rules={[{ required: true, message: '请选择角色' }]}
-          >
-            <Select
-              options={[
-                { value: 'student', label: '学生' },
-                { value: 'admin', label: '管理员' },
-              ]}
-            />
-          </Form.Item>
-          <Form.Item
-            name="college"
-            label="学院"
-            rules={[{ required: true, message: '请输入学院' }]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            name="contact"
-            label="联系方式"
-            rules={[{ required: true, message: '请输入联系方式' }]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item name="introduction" label="个人简介">
-            <Input.TextArea rows={4} />
-          </Form.Item>
-        </Form>
-      </Modal>
     </Card>
   );
 };
