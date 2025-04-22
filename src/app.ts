@@ -30,8 +30,8 @@ export const request: RequestConfig = {
       // 从localStorage中获取token
       const token = localStorage.getItem('token');
 
-      // config.baseURL = 'https://www.shuyikang.online:3000';
-      config.baseURL = 'http://localhost:3000';
+      config.baseURL = 'https://www.shuyikang.online:3000';
+      // config.baseURL = 'http://localhost:3000';
       // 如果token存在，将其添加到请求头中
       if (token) {
         config.headers = {
