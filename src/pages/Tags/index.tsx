@@ -26,6 +26,7 @@ const Tags = () => {
       content: '确定要删除该标签吗？',
       onOk: async () => {
         try {
+          console.log(record.id);
           await request(`/tool-library/tag/${record.id}`, { method: 'DELETE' });
           setData(data.filter((item) => item.id !== record.id));
           message.success('删除成功');
