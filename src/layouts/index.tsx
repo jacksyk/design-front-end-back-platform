@@ -45,6 +45,11 @@ const AdminLayout = () => {
       icon: <UserOutlined />,
       label: '工具箱标签管理',
     },
+    {
+      key: '/performance',
+      icon: <UserOutlined />,
+      label: '性能检测面板',
+    },
   ];
 
   return (

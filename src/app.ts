@@ -5,7 +5,7 @@
 import type { RequestConfig } from 'umi';
 
 import { RequestOptions } from '@umijs/max';
-import { message } from 'antd';
+import { Modal, message } from 'antd';
 // import VConsole from 'vconsole';
 
 // new VConsole();
@@ -18,10 +18,19 @@ export const request: RequestConfig = {
   errorConfig: {
     errorHandler(res: any) {
       if (res.response.status === 401) {
-        localStorage.removeItem('token');
-        window.location.href = '/login';
+        // 使用 Modal 提示用户
+        Modal.error({
+          title: '登录已过期',
+          content: '您的登录状态已过期，请重新登录',
+          okText: '确定',
+          onOk: () => {
+            localStorage.removeItem('token');
+            window.location.href = '/login';
+          },
+        });
+      } else {
+        message.error(res.response.statusText);
       }
-      message.error(res.response.statusText);
     },
     errorThrower() {},
   },
